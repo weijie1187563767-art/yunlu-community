@@ -10,50 +10,58 @@
 
 ---
 
-## 推荐方案：Cloudflare Pages（免费，0 元/月）
-项目已 `git init`，按以下步骤即可上线并绑定自定义域名。
+## 方案一：Cloudflare Pages（推荐，免费）
 
-### 第 1 步：推送到 GitHub
-1. 在 GitHub 新建一个**空仓库**（如 `yunlu-community`），不要勾选 README。
-2. 在本项目目录执行：
-   ```bash
-   git remote add origin https://github.com/<你的用户名>/yunlu-community.git
-   git branch -M main
-   git push -u origin main
-   ```
-   （`.gitignore` 已排除 `node_modules/` 和 `dist/`，只推源码。）
+### 前置条件
+- ✅ GitHub 仓库已建好并推送代码：`https://github.com/weijie1187563767-art/yunlu-community`
+- ✅ Cloudflare 账号已登录：`Weijie1187563767@gmail.com`
+- ⏳ 域名 `zhengguiyunlu.888.moe` 待绑定 DNS
 
-### 第 2 步：Cloudflare Pages 连接仓库
-1. 登录 Cloudflare → 左侧 **Workers & Pages** → **创建** → **Pages** → **连接到 Git**。
-2. 授权并选择 `yunlu-community` 仓库。
-3. 构建设置：
-   - **框架预设**：`Vite`
-   - **构建命令**：`npm run build`
-   - **输出目录**：`dist`
-   - **Node 版本**（可选，如面板有）：选 18+ 或 20+
-4. 点击 **保存并部署**，等待构建完成（约 1–2 分钟）。
-5. 会得到 `*.pages.dev` 临时地址，先访问确认页面正常。
+### 第 1 步：在 Cloudflare 创建 Pages 项目
+1. 登录 [dash.cloudflare.com](https://dash.cloudflare.com)
+2. 点 **Workers and Pages** 卡片 → **Start building**
+3. 或左侧菜单 **Build** → **Compute** → **Create** → **Pages** → **Connect to Git**
+4. 授权 GitHub 并选择 `yunlu-community` 仓库
 
-> 说明：`public/_redirects` 已就位，用于 Cloudflare Pages 的 SPA 路由回退（刷新子页面不会 404）。
+### 第 2 步：构建设置
+| 设置项 | 值 |
+|--------|-----|
+| 框架预设 | `Vite` |
+| 构建命令 | `npm run build` |
+| 输出目录 | `dist` |
+| Node 版本 | `20`（如有选项） |
 
-### 第 3 步：绑定自定义域名 zhengguiyunlu.888.moe
-1. 在 Cloudflare Pages 项目 → **自定义域** → 输入 `zhengguiyunlu.888.moe` → 继续。
-2. Cloudflare 会给出一条 **CNAME 目标**（形如 `yunlu-community.pages.dev` 或 `xxx.cloudflare-pages.com`）。
+点击 **Save and Deploy**，等待构建完成（约 1–2 分钟）。
+构建成功后会得到一个 `*.pages.dev` 临时地址，先访问确认页面正常。
 
-### 第 4 步：在域名注册商后台加 DNS
-登录你注册 `888.moe` 的商家后台，做以下任一操作：
-- **方式 A（仅加 CNAME，最简单）**：为 `zhengguiyunlu` 添加一条 **CNAME** 记录，值填第 3 步 Cloudflare 给的地址。
-- **方式 B（把域名整体托管给 Cloudflare，推荐）**：在 Cloudflare 添加该域名，把域名的 **NS 记录**改成 Cloudflare 提供的两条 NS；之后 SSL/HTTPS、缓存都在 Cloudflare 管。
-3. 等待 DNS 生效（通常几分钟，最长 48 小时）。
-4. 生效后访问 **https://zhengguiyunlu.888.moe** 即可。
+> SPA 回退说明：本项目的 `public/_redirects` 已就位；同时 GitHub Actions 构建时也会自动复制 `index.html` 为 `404.html`，双重保障刷新子页面不会 404。
+
+### 第 3 步：绑定自定义域名
+1. 在 Pages 项目页面 → **Custom domains** → **Set up a custom domain**
+2. 输入 `zhengguiyunlu.888.moe` → 继续
+3. Cloudflare 会给出一条 CNAME 目标值
+
+### 第 4 步：DNS 解析（域名注册商后台）
+登录你注册 `888.moe` 的商家后台：
+- **方式 A（仅加 CNAME）**：为 `zhengguiyunlu` 添加一条 **CNAME** 记录，值填第 3 步 Cloudflare 给的地址
+- **方式 B（NS 托管，推荐）**：在 Cloudflare 添加该域名，把域名的 **NS 记录**改成 Cloudflare 提供的两条 NS；SSL/HTTPS、缓存全部归 Cloudflare 管
+- 等 DNS 生效（几分钟 ~ 48 小时）
+- 生效后访问 **https://zhengguiyunlu.888.moe**
 
 ---
 
-## 备选方案：CloudStudio 自定义域名
-当前项目已部署在 CloudStudio 沙箱（预览地址见对话）。若 CloudStudio 面板支持「自定义域名」绑定：
-1. 在沙箱设置里添加 `zhengguiyunlu.888.moe`。
-2. 在域名注册商后台把 `zhengguiyunlu` 的 **CNAME** 指向 CloudStudio 给的地址。
-（优点：改动最小，沿用当前部署；缺点：自定义域名能力取决于平台是否开放。）
+## 方案二：GitHub Pages（备选，无需 Cloudflare 后台）
+
+项目已内置 GitHub Actions 自动部署（`.github/workflows/deploy.yml`）：
+- 推送到 `main` 分支即自动触发构建 + 发布到 GitHub Pages
+- 自动生成 `404.html` 做 SPA 回退
+
+### 开启步骤
+1. 打开仓库 `github.com/weijie1187563767-art/yunlu-community/settings/pages`
+2. Source 选择 **GitHub Actions**（不是 Deploy from branch）
+3. 推送一次代码即可自动部署
+4. 绑定自定义域名：同一 Settings/Pages 页面 → Custom domain 输入 `zhengguiyunlu.888.moe`
+5. 在域名注册商添加 CNAME 指向 `<username>.github.io`（或按 Pages 给的具体目标）
 
 ---
 
