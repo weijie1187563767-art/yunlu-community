@@ -34,7 +34,7 @@
 点击 **Save and Deploy**，等待构建完成（约 1–2 分钟）。
 构建成功后会得到一个 `*.pages.dev` 临时地址，先访问确认页面正常。
 
-> SPA 回退说明：本项目的 `public/_redirects` 已就位；同时 GitHub Actions 构建时也会自动复制 `index.html` 为 `404.html`，双重保障刷新子页面不会 404。
+> SPA 回退说明：本项目**不使用** `_redirects`（新版 Cloudflare Wrangler 会报「无限循环」）。改为在 `vite.config.js` 的构建钩子里自动复制 `index.html` 为 `dist/404.html`，Cloudflare Pages / GitHub Pages 遇到子路径刷新都会返回 404.html（即 SPA 首页），前端路由接管，不会 404。
 
 ### 第 3 步：绑定自定义域名
 1. 在 Pages 项目页面 → **Custom domains** → **Set up a custom domain**
