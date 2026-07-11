@@ -10,7 +10,45 @@
 
 ---
 
-## 方案一：Cloudflare Pages（推荐，免费）
+## ⚠️ 关键前提（已踩坑确认）
+- `888.moe` 的 DNS 实际托管在 **localhost.cc 自带的 Cloudflare（账号 B）**。
+- 你的 Worker/Pages 部署在 **独立的 dash.cloudflare.com（账号 A）**。
+- 两者是**不同账号**：在 localhost.cc 把 CNAME 指向 `*.workers.dev` 并开橙色云代理会**保存失败**（Cloudflare 拒绝代理不属于本账号的 Worker）。
+- **结论**：自定义域名请走 **GitHub Pages**（目标 `github.io`，Cloudflare 代理到 github.io 是标准组合，无跨账号问题）。
+
+---
+
+## 推荐：GitHub Pages 自定义域名（最稳）
+
+代码仓库已内置自动部署工作流 `.github/workflows/deploy.yml`（推 main 即构建 + 发布）。
+
+### 第 1 步：GitHub 开启 Pages
+1. 打开 `github.com/weijie1187563767-art/yunlu-community/settings/pages`
+2. **Build and deployment → Source** 选 **GitHub Actions**
+3. 推一次代码即自动部署（Actions 标签页出现绿色 ✓ 即成功）
+
+### 第 2 步：填自定义域名
+- 同一 Pages 设置页 → **Custom domain** 输入 `zhengguiyunlu.888.moe`
+- GitHub 会给出需要添加的验证记录（通常是 TXT，或复用下面的 CNAME）
+
+### 第 3 步：localhost.cc 加 DNS（关键）
+登录 localhost.cc → `888.moe` 的 DNS 管理 → 添加记录：
+| 字段 | 值 |
+|------|-----|
+| 类型 | `CNAME` |
+| 名称/下级前缀 | `zhengguiyunlu` |
+| 目标/内容 | `weijie1187563767-art.github.io` |
+| 代理（橙色云） | **开启** ✅ |
+
+如需验证 TXT，按 GitHub 提示一并添加。保存后等几分钟，访问 **https://zhengguiyunlu.888.moe**。
+
+> 旧的 `*.workers.dev` 部署可保留不用，不影响本方案。
+
+---
+
+## 备选：Cloudflare Pages（仅当把 DNS 也迁到账号 A 时）
+
+若你希望仍用 Cloudflare Pages 做源站，必须先把 `888.moe` 的 **NS 改成账号 A（dash.cloudflare.com）提供的 NS**（在 localhost.cc 后台改 Nameserver），让账号 A 同时拥有 zone 与 Worker，再走下面的步骤。否则会一直报「No zones match」。
 
 ### 前置条件
 - ✅ GitHub 仓库已建好并推送代码：`https://github.com/weijie1187563767-art/yunlu-community`
